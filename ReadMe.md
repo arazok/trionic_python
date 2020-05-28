@@ -24,6 +24,15 @@ https://www.raspberrypi.org/documentation/linux/kernel/building.md
 Of course you need to add the new compiled kernel modules can, can_raw and slcan into the /etc/modules.
 After boot they should be listed with lsmod.
 
+So, do a 
+
+sudo modprobe can, can_raw, slcan
+
+The Lawicel CanUSB Adapter is configured and started for our Trionic with this command:
+
+sudo slcand -f -b 4037 -o /dev/ttyUSB0 slcan0
+
+
 If all this is running, then you only need to execute my python script "T5LiveData.py"
 I have changed my LXDE environment so that the script is started automatically in full screen mode
 It works like this: ....
