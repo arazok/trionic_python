@@ -14,6 +14,7 @@ What do you need?
 How to connect the CANUSB adapter to the Trionic or to the diagnostic connector is described here:
 - http://www.saabcentral.com/forums/showthread.php?t=248842 or
 - http://www.16s.de/Forum/LiveDiag%209k%20CANUSB.pdf
+- http://pascal-walter.blogspot.com/2015/08/installing-lawicel-canusb-on-linux.html
 
 
 For the Raspi you need a build which also includes the so-called SLCAN module,
