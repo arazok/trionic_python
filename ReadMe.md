@@ -21,6 +21,8 @@ I had to compile the current Debian Jessie build accordingly.
 For instructions please see here:
 https://www.raspberrypi.org/documentation/linux/kernel/building.md
 
+In all newer verisons of Raspbian and Raspberry OS, the modules are built-in, so nothing todo so far :-).
+
 Of course you need to add the new compiled kernel modules can, can_raw and slcan into the /etc/modules.
 After boot they should be listed with lsmod.
 
@@ -37,8 +39,8 @@ If all this is running, then you only need to execute my python script "T5LiveDa
 I have changed my LXDE environment so that the script is started automatically in full screen mode
 It works like this: ....
 
-1) Open the "~ / .config / lxsession / LXDE / autostart"
-2) Add the line "@ / usr / bin / python /home/pi/T5LiveData.py"
+1) Open the "~ /.config/lxsession/LXDE-pi/autostart"
+2) Add the line "@/usr/bin/python /home/pi/T5LiveData.py"
 
 
 When the script is first started, the SW version of the Trionic is determined and the symbol table is generated and stored in a file.
