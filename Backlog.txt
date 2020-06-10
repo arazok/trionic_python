@@ -1,0 +1,6 @@
+(done) Fix error in frame 3 (start pressed)
+(done) Read SW Version, store into file with name "SW version"
+(done) Show SW Version, T5 type and script version in "Status" frame
+(done) Document and offer in Saab-cars.de
+Log all data also in a file for later readout.
+
