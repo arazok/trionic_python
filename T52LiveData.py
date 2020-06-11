@@ -146,17 +146,9 @@ class GuiApp:
 
         sGreen = ttk.Style()
         sGreen.theme_use('clam')
-		self.sGreen.layout("green.Horizontal.TProgressbar",
-         [('green.Horizontal.TProgressbar.trough',
-           {'children': [('green.Horizontal.TProgressbar.pbar',
-                          {'side': 'left', 'sticky': 'ns'}),
-                         ("green.Horizontal.TProgressbar.label",
-                          {"sticky": ""})],
-           'sticky': 'nswe'})])
         
  
         sGreen.configure("green.Horizontal.TProgressbar", foreground='green', background='green')
-		self.sGreen.configure("green.Horizontal.TProgressbar", text = "4500")
 
         sYellow = ttk.Style()
         sYellow.theme_use('clam')
@@ -431,15 +423,14 @@ class GuiApp:
                     
                     if (rpm < 5000):
                         self.pbRPM.configure(style="green.Horizontal.TProgressbar")
-						self.sGreen.configure(style="green.Horizontal.TProgressbar", text = rpm)
                     elif (rpm >= 5000 and rpm < 6000):
                         self.pbRPM.configure(style="yellow.Horizontal.TProgressbar")
                     else:
                         self.pbRPM.configure(style="red.Horizontal.TProgressbar")
-                    if (boost < 0.55):
+                    if (boost < 0.65):
                         self.pbBoost.configure(style="green.Horizontal.TProgressbar")
                         self.pbBoost2.configure(style="green.Horizontal.TProgressbar")
-                    elif (boost >= 0.55 and boost < 0.8):
+                    elif (boost >= 0.65 and boost < 0.8):
                         self.pbBoost.configure(style="yellow.Horizontal.TProgressbar")
                         self.pbBoost2.configure(style="yellow.Horizontal.TProgressbar")
                         
@@ -505,7 +496,8 @@ class CanClient:
     symMode = False
     swMode = False
     symbolTable = []
-
+    recheck = False
+    
     def __init__(self, master):
 
         for i in range(len(sys.argv)):
@@ -520,7 +512,7 @@ class CanClient:
 
             if (sys.argv[i].upper() == "SW"):
                 self.swMode = True
-
+ 
         # test ########## !!!!!!!!!!!!!!
         #self.symMode = True
         #self.swMode = True
@@ -539,6 +531,7 @@ class CanClient:
                 
         self.master = master
 
+
         # Create the queue
         self.queue = queue.Queue()
 
@@ -548,6 +541,7 @@ class CanClient:
         if (not self.demoMode):
             self.cansocket = socket.socket(socket.AF_CAN, socket.SOCK_RAW, socket.CAN_RAW)
             self.cansocket.bind(('slcan0',))
+            self.cansocket.settimeout(5.0)
 
         if self.symMode:
             # force reading from ECU and writing into file
@@ -973,6 +967,7 @@ class CanClient:
                 self.cansocket = socket.socket(socket.AF_CAN, socket.SOCK_RAW, socket.CAN_RAW)
                 self.cansocket.bind(('slcan0',))
                 self.recheck = False
+                self.demoMode = False
             except:
                 self.demoMode = True
                 self.recheck = True
@@ -998,7 +993,7 @@ class CanClient:
         print("Symbol %s not found!" % sym)
         
 
-    def getT5Values(self, stop_event):
+    def getT5Values(self,  stop_event):
         # init phase, show dialog
         self.gui.showInit()
         SWversion = self.getT5SWVersion_T52()
@@ -1054,7 +1049,6 @@ class CanClient:
                     rpm *= 10
 
                     #time.sleep(0.05)
-
 
                     # read speed (bil_hast)
                     speed = self.getT5Data(self.speed_adr, 1)
