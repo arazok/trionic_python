@@ -132,7 +132,7 @@ class GuiApp:
         Label(self.f1, textvariable = self.vLuftPeak, padx=5, pady=10).grid(row=4, column=3)
         Label(self.f1, textvariable = self.vSpeed, padx=5, pady=10).grid(row=5, column=1)
         Label(self.f1, textvariable = self.vSpeedPeak, padx=5, pady=10).grid(row=5, column=3)
-        Label(self.f1, textvariable = self.vRpm, padx=5, pady=10).grid(row=6, column=1)
+        Label(self.f1, textvariable = self.vRpm, padx=5, pady=10).grid(row=6, column=3)
         Label(self.f1, textvariable = self.vRpmPeak, padx=5, pady=10).grid(row=6, column=3)
         Label(self.f1, textvariable = self.vBatt, padx=5, pady=10).grid(row=7, column=1)
         Label(self.f1, textvariable = self.vBattPeak, padx=5, pady=10).grid(row=7, column=3)
@@ -140,15 +140,23 @@ class GuiApp:
 
         Label(self.f1, text = "U/min", padx=0, pady=5).grid(row=11, column=0)
 
-        sRed = ttk.Style()
+        sRed = ttk.Style()      
         sRed.theme_use('clam')
         sRed.configure("red.Horizontal.TProgressbar", foreground='red', background='red')
-
         sGreen = ttk.Style()
         sGreen.theme_use('clam')
-        
- 
-        sGreen.configure("green.Horizontal.TProgressbar", foreground='green', background='green')
+#        
+#        sGreen.layout("green.Horizontal.TProgressbar",
+#        [('green.Horizontal.TProgressbar.trough',
+#          {'children': [('green.Horizontal.TProgressbar.pbar',
+#                         {'side': 'left', 'sticky': 'ns'}),
+#                         ("green.Horizontal.TProgressbar.label",
+#                        {"sticky": ""})],
+#          'sticky': 'nswe'})])
+
+
+        sGreen.configure("green.Horizontal.TProgressbar", foreground='green', background='green',  text="4500")
+    
 
         sYellow = ttk.Style()
         sYellow.theme_use('clam')
@@ -423,6 +431,7 @@ class GuiApp:
                     
                     if (rpm < 5000):
                         self.pbRPM.configure(style="green.Horizontal.TProgressbar")
+#                        self.sGreen.configure(style="green.Horizontal.TProgressbar", text = rpm)
                     elif (rpm >= 5000 and rpm < 6000):
                         self.pbRPM.configure(style="yellow.Horizontal.TProgressbar")
                     else:
@@ -736,30 +745,34 @@ class CanClient:
         if (self.demoMode):
             recv = b"\x0c\x00\x00\x00\x08\xff\xff\xff\xc7\x00\x30\x25\x80\x00\x5c\x01", ('slcan0', 29)
         else:
-            recv = (self.cansocket).recvfrom(16)
+            try:
+                recv = (self.cansocket).recvfrom(16)
+            except socket.timeout:
+                print("sockettimeout")
+                recv = TIMEOUT
         # only for test #
-        if (self.symMode and self.demoMode):
-            if self.count < 5:
-                recv = b"\x0c\x00\x00\x00\x08\xff\xff\xff\xc7\x00\x30\x25\x80\x00\x5c\x00", ('slcan0', 29)
-                
-            elif self.count == 6:
-                recv = b"\x0c\x00\x00\x00\x08\xff\xff\xff\xc7\x00E\x25\x80\x00\x5c\x00", ('slcan0', 29)
-               
-            elif self.count == 7:
-                recv = b"\x0c\x00\x00\x00\x08\xff\xff\xff\xc7\x00N\x25\x80\x00\x5c\x00", ('slcan0', 29)
-               
-            elif self.count == 8:
-                recv = b"\x0c\x00\x00\x00\x08\xff\xff\xff\xc7\x00D\x25\x80\x00\x5c\x00", ('slcan0', 29)
-               
-            elif self.count == 9:
-                recv = b"\x0c\x00\x00\x00\x08\xff\xff\xff\xc7\x00\x0d\x25\x80\x00\x5c\x00", ('slcan0', 29)
-               
-            elif self.count == 10:
-                recv = b"\x0c\x00\x00\x00\x08\xff\xff\xff\xc7\x00\x0a\x25\x80\x00\x5c\x00", ('slcan0', 29)
-                self.count = 0
-
-            if (self.count > 10):
-                self.count = 0
+#        if (self.symMode and self.demoMode):
+#            if self.count < 5:
+#                recv = b"\x0c\x00\x00\x00\x08\xff\xff\xff\xc7\x00\x30\x25\x80\x00\x5c\x00", ('slcan0', 29)
+#                
+#            elif self.count == 6:
+#                recv = b"\x0c\x00\x00\x00\x08\xff\xff\xff\xc7\x00E\x25\x80\x00\x5c\x00", ('slcan0', 29)
+#               
+#            elif self.count == 7:
+#                recv = b"\x0c\x00\x00\x00\x08\xff\xff\xff\xc7\x00N\x25\x80\x00\x5c\x00", ('slcan0', 29)
+#               
+#            elif self.count == 8:
+#                recv = b"\x0c\x00\x00\x00\x08\xff\xff\xff\xc7\x00D\x25\x80\x00\x5c\x00", ('slcan0', 29)
+#               
+#            elif self.count == 9:
+#                recv = b"\x0c\x00\x00\x00\x08\xff\xff\xff\xc7\x00\x0d\x25\x80\x00\x5c\x00", ('slcan0', 29)
+#               
+#            elif self.count == 10:
+#                recv = b"\x0c\x00\x00\x00\x08\xff\xff\xff\xc7\x00\x0a\x25\x80\x00\x5c\x00", ('slcan0', 29)
+#                self.count = 0
+#
+#            if (self.count > 10):
+#                self.count = 0
         # test end ###
         self.printFrame(recv[0], False)
         return recv[0] # only 1st element (canframe) is interesting
