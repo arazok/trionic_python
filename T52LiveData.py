@@ -132,7 +132,7 @@ class GuiApp:
         Label(self.f1, textvariable = self.vLuftPeak, padx=5, pady=10).grid(row=4, column=3)
         Label(self.f1, textvariable = self.vSpeed, padx=5, pady=10).grid(row=5, column=1)
         Label(self.f1, textvariable = self.vSpeedPeak, padx=5, pady=10).grid(row=5, column=3)
-        Label(self.f1, textvariable = self.vRpm, padx=5, pady=10).grid(row=6, column=3)
+        Label(self.f1, textvariable = self.vRpm, padx=5, pady=10).grid(row=6, column=1)
         Label(self.f1, textvariable = self.vRpmPeak, padx=5, pady=10).grid(row=6, column=3)
         Label(self.f1, textvariable = self.vBatt, padx=5, pady=10).grid(row=7, column=1)
         Label(self.f1, textvariable = self.vBattPeak, padx=5, pady=10).grid(row=7, column=3)
@@ -281,8 +281,8 @@ class GuiApp:
         self.nbook.grid()
         
 
-    def showInit(self):
-        ShowStr = '\n\n   Reading Symbol Table...'
+    def showInit(self, textstr):
+        ShowStr = textstr
         self.InfoBox = Label(self.main, text=ShowStr)
         self.InfoBox.grid()
         
@@ -490,7 +490,7 @@ class CanClient:
     
     count = 0
     
-    ### here are the symbol adresses
+    ### here are the symbol addresses
     kyltemp_adr = 0x1032 # kyl_temp (1 byte)       
     lufttemp_adr = 0x1036 # luft_temp (1 byte)
     rpm_adr = 0x1062 # rpm (2 bytes)
@@ -554,7 +554,7 @@ class CanClient:
 
         if self.symMode:
             # force reading from ECU and writing into file
-            SW_VER = self.getT5SWVersion_T52()
+            SW_VER = self.getT5SWVersion()
             self.getT5SymbolTable(SW_VER, True)
             time.sleep(1)
             self.sendC2Cmd()
@@ -562,7 +562,7 @@ class CanClient:
             exit(1)
     
         elif self.swMode:
-            self.getT5SWVersion_T52()
+            self.getT5SWVersion()
             time.sleep(1)
             self.sendC2Cmd()
             print ("finish App")
@@ -614,7 +614,7 @@ class CanClient:
 
     def sendReadSRAMCmd(self, address):
         if not address:
-           print ("Error, adress empty!")
+           print ("Error, address empty!")
            return False  
         address += 5 # 5 bytes are read
         cmd = 0x00000000000000C7;
@@ -644,6 +644,10 @@ class CanClient:
     def waitForResponse(self):
         returnStr = ""
         recv = self.readFrame()
+        #print (recv)
+        if (recv == "TIMEOUT"):
+			# timeout reveived
+            return TIMEOUT
         values = bytearray(recv)
         if self.demoMode:
             values[8] = 0xc6  # C6 must be content of byte 7
@@ -749,7 +753,8 @@ class CanClient:
                 recv = (self.cansocket).recvfrom(16)
             except socket.timeout:
                 print("sockettimeout")
-                recv = TIMEOUT
+                # return a wrong value
+                recv = ("TIMEOUT", ('slcan0', 29))
         # only for test #
 #        if (self.symMode and self.demoMode):
 #            if self.count < 5:
@@ -774,12 +779,13 @@ class CanClient:
 #            if (self.count > 10):
 #                self.count = 0
         # test end ###
-        self.printFrame(recv[0], False)
+        #self.printFrame(recv[0], False)
         return recv[0] # only 1st element (canframe) is interesting
 
     def getT5SymbolTable(self, fileName, bForce = False):
         # check, if Symboltable already exists
         bSymFile = os.path.isfile(fileName)
+        #print(fileName, bSymFile)
         if (self.dumpMode):
             print(fileName, bSymFile)
         
@@ -830,15 +836,16 @@ class CanClient:
         version = self.sendCmdByteEMax(CR,chr(CR)+chr(NL),20)
         # test only
         #version = ">>A554X24L.18C\r\n"
+
         version = version.lstrip('>')
         version = version.rstrip('\n')
         version = version.rstrip('\r')
         version = version.replace(">", "")
         n = len(version)
         if n < 10: # trionic 5.2 --> send capital "S", version is 1st string of symtable
-            print("T5.2 found")
+            print("check for T5.2...")
             self.sendCmdByteN(ord('S'), 1)
-            version = self.sendCmdByteE(CR, chr(CR)+chr(NL))
+            version = self.sendCmdByteE(CR, chr(CR)+chr(NL)) 
             version = version.lstrip('>')
             version = version.rstrip('\n')
             version = version.rstrip('\r')
@@ -900,6 +907,9 @@ class CanClient:
         #print(address)
         self.sendReadSRAMCmd(address)
         recvframe = self.readFrame()
+        if (recvframe == TIMEOUT):
+            return 0
+			
         datalist = self.getSRAMReadData(recvframe)
 
         # for some special states like pgm_data, special calculation needed
@@ -1008,9 +1018,15 @@ class CanClient:
 
     def getT5Values(self,  stop_event):
         # init phase, show dialog
-        self.gui.showInit()
+        self.gui.showInit('\n\n   Reading Software Version...')
         SWversion = self.getT5SWVersion_T52()
+        time.sleep(1)
+        self.sendC2Cmd() 
         #print (SWversion)
+        if (SWversion == TIMEOUT):
+            self.demoMode = True
+            SWversion = "DEMO.SYMBOLS"
+        #self.gui.showInit('\n\n   Reading Software Version...' + SWversion + '\n\n   Reading Symbol Table...')
         self.gui.SWVer.set("T5 Version: " +SWversion)
         self.getT5SymbolTable(SWversion)
 
@@ -1205,7 +1221,6 @@ class CanClient:
                         
                     time.sleep(20/1000)  #wait for 20 ms
             
-
                     values = {"pgm":pgm}
                     self.queue.put(values)
                 
